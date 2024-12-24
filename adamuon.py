@@ -57,10 +57,10 @@ class Muon(torch.optim.Optimizer):
         adamw_eps: The epsilon for the internal AdamW.
         adamw_wd: The weight decay for the internal AdamW.
     """
-    def __init__(self, muon_params, lr=0.02, momentum=0.95, nesterov=True, ns_steps=6,
+    def __init__(self, muon_params, lr=0.02, momentum=0.95, beta2=0.995, nesterov=True, ns_steps=6,
                  adamw_params=None, adamw_lr=3e-4, adamw_betas=(0.95, 0.95), adamw_eps=1e-8, adamw_wd=0):
 
-        defaults = dict(lr=lr, momentum=momentum, nesterov=nesterov, ns_steps=ns_steps,
+        defaults = dict(lr=lr, momentum=momentum, beta2=beta2, nesterov=nesterov, ns_steps=ns_steps,
                         adamw_lr_ratio=adamw_lr/lr, adamw_betas=adamw_betas,
                         adamw_eps=adamw_eps, adamw_wd=adamw_wd)
 
@@ -108,6 +108,7 @@ class Muon(torch.optim.Optimizer):
             params = [p for p in group['params'] if self.state[p]['use_muon']]
             lr = group['lr']
             momentum = group['momentum']
+            beta2 = group['beta2']
 
             # generate weight updates in distributed fashion
             total_params = sum(p.numel() for p in params)
@@ -125,15 +126,19 @@ class Muon(torch.optim.Optimizer):
                     state = self.state[p]
                     if 'momentum_buffer' not in state:
                         state['momentum_buffer'] = torch.zeros_like(g)
+                        state['grad_norm_ema'] = torch.zeros_like(g.norm().unsqueeze(0))
                     buf = state['momentum_buffer']
                     buf.mul_(momentum).add_(g)
                     if group['nesterov']:
                         g = g.add(buf, alpha=momentum)
                     else:
                         g = buf
-                    og_norm = g.norm()
+                    og_norm = g.norm().unsqueeze(0)
+                    grad_norm_ema = state['grad_norm_ema']
+                    grad_norm_ema.lerp_(og_norm**2, 1-beta2)
                     g = zeropower_via_newtonschulz5(g, steps=group['ns_steps'])
-                    g *= (og_norm/g.norm())
+                    g *= (og_norm/g.norm().unsqueeze(0))
+                    g *= 1.0 / (torch.sqrt(grad_norm_ema) + 1e-8)
                     updates_flat[curr_idx:curr_idx+p.numel()] = g.flatten()
                 curr_idx += p.numel()
 
