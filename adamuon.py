@@ -137,7 +137,7 @@ class Muon(torch.optim.Optimizer):
                     grad_norm_ema = state['grad_norm_ema']
                     grad_norm_ema.lerp_(og_norm**2, 1-beta2)
                     g = zeropower_via_newtonschulz5(g, steps=group['ns_steps'])
-                    g *= (og_norm/g.norm().unsqueeze(0))
+                    g *= (og_norm/(g.norm().unsqueeze(0)+1e-8))
                     g *= 1.0 / (torch.sqrt(grad_norm_ema) + 1e-8)
                     updates_flat[curr_idx:curr_idx+p.numel()] = g.flatten()
                 curr_idx += p.numel()
