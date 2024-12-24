@@ -131,8 +131,9 @@ class Muon(torch.optim.Optimizer):
                         g = g.add(buf, alpha=momentum)
                     else:
                         g = buf
+                    og_norm = g.norm()
                     g = zeropower_via_newtonschulz5(g, steps=group['ns_steps'])
-                    g *= max(1, g.size(0)/g.size(1))**0.5
+                    g *= (og_norm/g.norm())
                     updates_flat[curr_idx:curr_idx+p.numel()] = g.flatten()
                 curr_idx += p.numel()
 
