@@ -1,6 +1,8 @@
-# Muon optimizer
+# AdaMuon optimizer
 
-This repo contains an implementation of the `Muon` optimizer described in [this thread](https://x.com/kellerjordan0/status/1842300916864844014) and [this writeup](https://kellerjordan.github.io/posts/muon/).
+Forked from the implementation of the `Muon` optimizer described in [this thread](https://x.com/kellerjordan0/status/1842300916864844014) and [this writeup](https://kellerjordan.github.io/posts/muon/).
+
+Muon + Novograd style second moment normalization
 
 ## Installation
 
