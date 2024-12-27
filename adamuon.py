@@ -31,7 +31,7 @@ def zeropower_via_newtonschulz5(G, steps):
         X = X.T
     return X
 
-class Muon(torch.optim.Optimizer):
+class AdaMuon(torch.optim.Optimizer):
     """
     Muon - MomentUm Orthogonalized by Newton-schulz
 
