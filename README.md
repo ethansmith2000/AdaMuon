@@ -1,8 +1,14 @@
-# AdaMuon optimizer
+# MuonVariants
 
 Forked from the implementation of the `Muon` optimizer described in [this thread](https://x.com/kellerjordan0/status/1842300916864844014) and [this writeup](https://kellerjordan.github.io/posts/muon/).
 
+AdaMuon
 Muon + Novograd style second moment normalization
+
+MomMuon
+Muon with NS formulation borrowed from [SWAN paper ](https://github.com/ethansmith2000/SWANOptimizer/tree/main) which produces a preconditioner, not the orthogonalized gradient.
+From there, we can keep a running average of this preconditioner.
+We can also opt to only NS every N steps.
 
 ## Installation
 
